@@ -1353,6 +1353,7 @@ const definitions: Definition[] = [
         },
         onEvent: preventReset,
         configure: async (device, coordinatorEndpoint, logger) => {
+            utils.attachOutputCluster(device, 'genOta');
             // Device advertises itself as Router but is an EndDevice
             device.type = 'EndDevice';
             device.save();
@@ -2752,7 +2753,7 @@ const definitions: Definition[] = [
         fromZigbee: [fz.on_off, fz.xiaomi_power, fz.aqara_opple],
         toZigbee: [tz.on_off, tz.xiaomi_power, tz.xiaomi_switch_type, tz.xiaomi_switch_power_outage_memory, tz.xiaomi_led_disabled_night],
         exposes: [e.switch(), e.power().withAccess(ea.STATE_GET), e.energy(), e.device_temperature().withAccess(ea.STATE),
-            e.voltage(), e.power_outage_memory(), e.led_disabled_night(), e.switch_type()],
+            e.voltage(), e.current(), e.power_outage_memory(), e.led_disabled_night(), e.switch_type()],
         configure: async (device, coordinatorEndpoint, logger) => {
             await device.getEndpoint(1).write('aqaraOpple', {'mode': 1}, {manufacturerCode: 0x115f, disableResponse: true});
             device.powerSource = 'Mains (single phase)';
@@ -2847,6 +2848,16 @@ const definitions: Definition[] = [
             // await reporting.onOff(device.getEndpoint(3)); ToDo: Currently fails
         },
         ota: ota.zigbeeOTA,
+    },
+    {
+        zigbeeModel: ['lumi.remote.b186acn03'],
+        model: 'WXKG05LM',
+        vendor: 'Xiaomi',
+        description: 'Aqara T1 wireless switch',
+        meta: {battery: {voltageToPercentage: '3V_2850_3000'}},
+        fromZigbee: [fz.xiaomi_on_off_action, fz.xiaomi_multistate_action, fz.battery, fz.aqara_opple],
+        toZigbee: [],
+        exposes: [e.action(['single', 'double', 'hold']), e.battery()],
     },
     {
         zigbeeModel: ['lumi.remote.b28ac1'],
@@ -3199,7 +3210,8 @@ const definitions: Definition[] = [
                 .withPreset(['manual', 'away', 'auto']).setAccess('preset', ea.ALL),
             e.temperature_sensor_select(['internal', 'external']).withAccess(ea.ALL),
             e.binary('calibrated', ea.STATE, true, false)
-                .withDescription('Is the valve calibrated'),
+                .withDescription('Indicates if this valve is calibrated, use the calibrate option to calibrate'),
+            e.enum('calibrate', ea.ALL, ['calibrate']).withDescription('Calibrates the valve'),
             e.child_lock().setAccess('state', ea.ALL),
             e.window_detection().setAccess('state', ea.ALL),
             e.binary('window_open', ea.STATE, true, false),

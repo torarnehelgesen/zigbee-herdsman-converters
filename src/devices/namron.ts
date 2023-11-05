@@ -156,10 +156,25 @@ const definitions: Definition[] = [
         zigbeeModel: ['1402767'],
         model: '1402767',
         vendor: 'Namron',
-        description: 'Zigbee dimmer 2-pol 250W',
-        extend: extend.light_onoff_brightness({noConfigure: true}),
+        description: 'Zigbee LED dimmer',
+        extend: extend.light_onoff_brightness({noConfigure: true, disableEffect: true}),
+        meta: {disableDefaultResponse: true},
         configure: async (device, coordinatorEndpoint, logger) => {
             await extend.light_onoff_brightness().configure(device, coordinatorEndpoint, logger);
+            const endpoint = device.getEndpoint(1);
+            await reporting.bind(endpoint, coordinatorEndpoint, ['genOnOff', 'genLevelCtrl']);
+            await reporting.onOff(endpoint);
+        },
+    },
+    {
+        zigbeeModel: ['1402768'],
+        model: '1402768',
+        vendor: 'Namron',
+        description: 'Zigbee LED dimmer TW 250W',
+        extend: extend.light_onoff_brightness_colortemp({noConfigure: true, disableEffect: true, colorTempRange: [250, 65279]}),
+        meta: {disableDefaultResponse: true},
+        configure: async (device, coordinatorEndpoint, logger) => {
+            await extend.light_onoff_brightness_colortemp().configure(device, coordinatorEndpoint, logger);
             const endpoint = device.getEndpoint(1);
             await reporting.bind(endpoint, coordinatorEndpoint, ['genOnOff', 'genLevelCtrl']);
             await reporting.onOff(endpoint);
@@ -432,7 +447,7 @@ const definitions: Definition[] = [
         zigbeeModel: ['4512737', '4512738'],
         model: '4512737/4512738',
         vendor: 'Namron',
-        description: 'Touch termostat',
+        description: 'Touch thermostat',
         fromZigbee: [fz.thermostat, fz.namron_thermostat, fz.metering, fz.electrical_measurement,
             fz.namron_hvac_user_interface],
         toZigbee: [tz.thermostat_occupied_heating_setpoint, tz.thermostat_unoccupied_heating_setpoint, tz.thermostat_occupancy,
